@@ -76,6 +76,12 @@ jobs:
         run: |
           aws s3 cp app.zip "s3://${AWS_S3_BUCKET}/movie-be-${{ github.sha }}.zip"
 
+      - name: Wait for environment to be ready
+        env:
+          EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
+        run: |
+          aws elasticbeanstalk wait environment-ready --environment-names "${EB_ENV_NAME}"
+
       - name: Deploy to Elastic Beanstalk
         env:
           EB_APP_NAME: ${{ secrets.EB_APP_NAME }}
