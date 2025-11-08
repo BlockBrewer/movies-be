@@ -72,20 +72,20 @@ jobs:
 
       - name: Upload application bundle
         env:
-          EB_S3_BUCKET: ${{ secrets.EB_S3_BUCKET }}
+          EB_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
         run: |
-          aws s3 cp app.zip "s3://${EB_S3_BUCKET}/movie-be-${{ github.sha }}.zip"
+          aws s3 cp app.zip "s3://${AWS_S3_BUCKET}/movie-be-${{ github.sha }}.zip"
 
       - name: Deploy to Elastic Beanstalk
         env:
           EB_APP_NAME: ${{ secrets.EB_APP_NAME }}
           EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
-          EB_S3_BUCKET: ${{ secrets.EB_S3_BUCKET }}
+          EB_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
         run: |
           aws elasticbeanstalk create-application-version \
             --application-name "${EB_APP_NAME}" \
             --version-label "${GITHUB_SHA}" \
-            --source-bundle S3Bucket="${EB_S3_BUCKET}",S3Key="movie-be-${GITHUB_SHA}.zip"
+            --source-bundle S3Bucket="${AWS_S3_BUCKET}",S3Key="movie-be-${GITHUB_SHA}.zip"
 
           aws elasticbeanstalk update-environment \
             --environment-name "${EB_ENV_NAME}" \
