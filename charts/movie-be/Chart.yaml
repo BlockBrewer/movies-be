@@ -1,0 +1,5 @@
+apiVersion: v2
+name: movie-be
+version: 0.1.0
+appVersion: "1.0.0"
+description: Helm chart for Movie backend service

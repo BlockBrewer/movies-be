@@ -1,0 +1,14 @@
+node_modules
+.dist
+coverage
+dist
+.env
+.env.*
+pnpm-lock.yaml
+.nx/cache
+.DS_Store
+.idea
+.vscode
+logs
+/tmp
+.pnpm-store

@@ -1,0 +1,23 @@
+version: '3.9'
+services:
+  api:
+    build: .
+    env_file:
+      - config/env.example
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    command: npm run start:dev
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: movie
+      POSTGRES_USER: movie
+      POSTGRES_PASSWORD: movie
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+volumes:
+  pgdata:
