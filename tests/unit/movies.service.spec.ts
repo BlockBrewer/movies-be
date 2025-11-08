@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 
+import { S3Service } from '../../src/core/services/s3.service';
 import { CreateMovieDto } from '../../src/modules/movies/dtos/create-movie.dto';
 import { UpdateMovieDto } from '../../src/modules/movies/dtos/update-movie.dto';
 import { MovieRepository } from '../../src/modules/movies/repositories/movie.repository';
@@ -31,6 +32,14 @@ describe('MoviesService', () => {
             findAll: jest.fn().mockResolvedValue([movieFixture]),
             findById: jest.fn(),
             remove: jest.fn(),
+          },
+        },
+        {
+          provide: S3Service,
+          useValue: {
+            uploadFile: jest.fn(),
+            deleteFile: jest.fn(),
+            extractKeyFromUrl: jest.fn(),
           },
         },
       ],
