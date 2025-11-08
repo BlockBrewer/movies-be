@@ -24,7 +24,7 @@ async function bootstrap(): Promise<void> {
 
   const configService = app.get(ConfigService);
   const dynamicConfigService = app.get(DynamicConfigService);
-  const port = configService.get<number>('app.port', { infer: true }) ?? 3000;
+  const port = configService.get<number>('app.port', { infer: true }) ?? 3025;
 
   app.useLogger(app.get(WinstonLoggerService));
   app.useGlobalFilters(new HttpExceptionFilter(app.get(WinstonLoggerService)));
@@ -44,15 +44,28 @@ async function bootstrap(): Promise<void> {
     app.get(TimeoutInterceptor),
   );
 
+  // Enable CORS with explicit configuration
   app.enableCors({
-    origin: dynamicConfigService.get<string[]>('cors.allowedOrigins'),
+    origin: dynamicConfigService.get<string[]>('cors.allowedOrigins') || [
+      'http://localhost:3000',
+      'http://localhost:3001',
+    ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Request-Id'],
+    exposedHeaders: ['X-Request-Id'],
+    maxAge: 3600,
   });
 
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.use(json({ limit: '10mb' }));
   app.use(urlencoded({ extended: true }));
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+    }),
+  );
   app.use(compression());
   app.use(RequestIdMiddleware);
 

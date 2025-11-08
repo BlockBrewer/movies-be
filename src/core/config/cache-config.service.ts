@@ -3,7 +3,7 @@ import { registerAs } from '@nestjs/config';
 export const appConfig = registerAs('app', () => ({
   name: process.env.APP_NAME ?? 'movie-be',
   env: process.env.NODE_ENV ?? 'development',
-  port: Number(process.env.PORT ?? 3000),
+  port: Number(process.env.PORT ?? 3025),
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 15000),
   dynamicConfigPath: process.env.DYNAMIC_CONFIG_PATH ?? 'config/runtime.json',
 }));

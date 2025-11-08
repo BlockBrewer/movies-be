@@ -35,7 +35,7 @@ Or use Docker:
 docker-compose up -d
 ```
 
-API docs available at `http://localhost:3000/docs`
+API docs available at `http://localhost:3025/docs`
 
 ## Development
 
@@ -85,6 +85,35 @@ See `config/env.example` for all required configuration. Key variables:
 - `DATABASE_URL` - PostgreSQL connection string
 - `JWT_SECRET` - Secret for JWT tokens
 - `AWS_*` - S3 credentials and bucket info
+
+## CI/CD (Elastic Beanstalk)
+
+GitHub Actions automatically builds, tests, and deploys the service to AWS Elastic Beanstalk when changes land on `main`.
+
+### Prerequisites
+
+- Elastic Beanstalk application and environment already provisioned (Node.js platform).
+- S3 bucket for application bundles (often created automatically by Elastic Beanstalk).
+- AWS IAM user or role with `elasticbeanstalk:*`, `s3:*`, and `iam:PassRole` permissions limited to the target resources.
+
+### GitHub Secrets
+
+Configure the following repository secrets before enabling the workflow:
+
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` – credentials that can manage the target Elastic Beanstalk environment.
+- `AWS_REGION` – e.g. `ap-southeast-1`.
+- `EB_APP_NAME` – Elastic Beanstalk application name.
+- `EB_ENV_NAME` – Elastic Beanstalk environment name.
+- `EB_S3_BUCKET` – S3 bucket that stores application bundles (for example `elasticbeanstalk-ap-southeast-1-123456789012`).
+
+### Deployment Flow
+
+1. Push or merge to `main` (or trigger `Deploy to Elastic Beanstalk` manually from the Actions tab).
+2. The workflow installs dependencies with `pnpm`, runs lint and tests, and builds the production bundle.
+3. A ZIP artifact (without `node_modules`) is uploaded to the configured S3 bucket.
+4. The workflow creates a new Elastic Beanstalk application version using the commit SHA as the version label and swaps the environment to that version.
+
+Monitor deployment progress from the Elastic Beanstalk console or the Actions run logs. If a deployment fails, review the EB event logs for more details.
 
 ## License
 
