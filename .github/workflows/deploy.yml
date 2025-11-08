@@ -8,6 +8,7 @@ on:
 
 env:
   NODE_VERSION: '20'
+  VERSION_LABEL: ${{ github.sha }}-${{ github.run_number }}
 
 jobs:
   build-and-deploy:
@@ -26,29 +27,23 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Use PNPM 10
-        run: corepack prepare pnpm@10 --activate
-
       - name: Install dependencies
         run: |
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm install --frozen-lockfile
+          if [ -f package-lock.json ]; then
+            npm ci
           else
-            echo "pnpm-lock.yaml not found; installing without frozen lockfile"
-            pnpm install
+            echo "package-lock.json not found; running npm install"
+            npm install
           fi
 
       - name: Lint
-        run: pnpm run lint
+        run: npm run lint
 
       - name: Run unit tests
-        run: pnpm run test:unit
+        run: npm run test:unit
 
       - name: Build application
-        run: pnpm run build
+        run: npm run build
 
       - name: Create deployment package
         run: |
@@ -60,7 +55,6 @@ jobs:
                "tests/*" \
                ".github/*" \
                "*.log" \
-               "pnpm-store/*" \
                "coverage/*"
 
       - name: Configure AWS credentials
@@ -74,13 +68,25 @@ jobs:
         env:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
         run: |
-          aws s3 cp app.zip "s3://${AWS_S3_BUCKET}/movie-be-${{ github.sha }}.zip"
+          aws s3 cp app.zip "s3://${AWS_S3_BUCKET}/movie-be-${VERSION_LABEL}.zip"
 
       - name: Wait for environment to be ready
         env:
           EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
         run: |
-          aws elasticbeanstalk wait environment-ready --environment-names "${EB_ENV_NAME}"
+          echo "Waiting for environment ${EB_ENV_NAME} to reach Ready state..."
+          for attempt in {1..40}; do
+            STATUS=$(aws elasticbeanstalk describe-environments --environment-names "${EB_ENV_NAME}" --query 'Environments[0].Status' --output text)
+            HEALTH=$(aws elasticbeanstalk describe-environments --environment-names "${EB_ENV_NAME}" --query 'Environments[0].Health' --output text)
+            echo "Attempt ${attempt}: status=${STATUS}, health=${HEALTH}"
+            if [[ "${STATUS}" == "Ready" && "${HEALTH}" != "Severe" && "${HEALTH}" != "Degraded" ]]; then
+              echo "Environment is ready."
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "Environment did not reach Ready state in time."
+          exit 1
 
       - name: Deploy to Elastic Beanstalk
         env:
@@ -88,12 +94,22 @@ jobs:
           EB_ENV_NAME: ${{ secrets.EB_ENV_NAME }}
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
         run: |
-          aws elasticbeanstalk create-application-version \
+          EXISTING_VERSION_COUNT=$(aws elasticbeanstalk describe-application-versions \
             --application-name "${EB_APP_NAME}" \
-            --version-label "${GITHUB_SHA}" \
-            --source-bundle S3Bucket="${AWS_S3_BUCKET}",S3Key="movie-be-${GITHUB_SHA}.zip"
+            --version-labels "${VERSION_LABEL}" \
+            --query 'length(ApplicationVersions)' \
+            --output text)
+
+          if [ "${EXISTING_VERSION_COUNT}" -eq 0 ]; then
+            aws elasticbeanstalk create-application-version \
+              --application-name "${EB_APP_NAME}" \
+              --version-label "${VERSION_LABEL}" \
+              --source-bundle S3Bucket="${AWS_S3_BUCKET}",S3Key="movie-be-${VERSION_LABEL}.zip"
+          else
+            echo "Application version ${VERSION_LABEL} already exists; skipping creation."
+          fi
 
           aws elasticbeanstalk update-environment \
             --environment-name "${EB_ENV_NAME}" \
-            --version-label "${GITHUB_SHA}"
+            --version-label "${VERSION_LABEL}"
 

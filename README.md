@@ -23,11 +23,11 @@ cp config/env.example .env
 
 3. Install dependencies and run:
 ```bash
-pnpm install
-pnpm run build
-pnpm run migration:run
-pnpm run seed
-pnpm start:dev
+npm install
+npm run build
+npm run migrate
+npm run seed
+npm run start:dev
 ```
 
 Or use Docker:
@@ -41,17 +41,17 @@ API docs available at `http://localhost:3025/docs`
 
 ```bash
 # Linting
-pnpm lint
-pnpm format
+npm run lint
+npm run format
 
 # Testing
-pnpm test:unit
-pnpm test:integration
-pnpm test:e2e
+npm run test:unit
+npm run test:integration
+npm run test:e2e
 
 # Database
-pnpm migration:generate
-pnpm migration:run
+npm run migration:generate
+npm run migrate
 ```
 
 ## Project Structure
@@ -109,7 +109,7 @@ Configure the following repository secrets before enabling the workflow:
 ### Deployment Flow
 
 1. Push or merge to `main` (or trigger `Deploy to Elastic Beanstalk` manually from the Actions tab).
-2. The workflow installs dependencies with `pnpm`, runs lint and tests, and builds the production bundle.
+2. The workflow installs dependencies with `npm`, runs lint and tests, and builds the production bundle.
 3. A ZIP artifact (without `node_modules`) is uploaded to the configured S3 bucket.
 4. The workflow creates a new Elastic Beanstalk application version using the commit SHA as the version label and swaps the environment to that version.
 

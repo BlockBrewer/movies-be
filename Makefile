@@ -1,20 +1,19 @@
 .PHONY: install lint test build start docker-up docker-down migrate seed
 
 install:
-	corepack enable
-	pnpm install
+	npm install
 
 lint:
-	pnpm lint
+	npm run lint
 
 test:
-	pnpm test:cov
+	npm run test:cov
 
 build:
-	pnpm build
+	npm run build
 
 start:
-	pnpm start:dev
+	npm run start:dev
 
 docker-up:
 	docker-compose up --build
@@ -23,7 +22,7 @@ docker-down:
 	docker-compose down
 
 migrate:
-	pnpm migrate
+	npm run migrate
 
 seed:
-	pnpm seed
+	npm run seed

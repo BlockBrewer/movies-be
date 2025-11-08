@@ -4,22 +4,21 @@
   "description": "Enterprise-grade NestJS backend for movie platform",
   "private": true,
   "scripts": {
-    "preinstall": "node scripts/enforce-pnpm.js",
     "format": "prettier --write \"{src,tests,scripts}/**/*.{ts,js,json,md,yml,yaml}\"",
     "lint": "eslint \"{src,tests}/**/*.ts\" --max-warnings=0",
     "build": "nest build",
     "start": "node dist/main.js",
-    "start:dev": "pnpm exec nest start --watch",
+    "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
     "start:debug": "nest start --debug --watch",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:unit": "jest --config jest.unit.config.ts --runInBand",
-    "migrate": "pnpm typeorm migration:run -d dist/src/core/config/typeorm.config.js",
-    "migration:generate": "pnpm typeorm migration:generate src/db/migrations/${npm_config_name} -d src/core/config/typeorm.config.ts",
+    "migrate": "typeorm migration:run -d dist/src/core/config/typeorm.config.js",
+    "migration:generate": "typeorm migration:generate src/db/migrations/${npm_config_name} -d src/core/config/typeorm.config.ts",
     "seed": "ts-node -r tsconfig-paths/register src/modules/seeding/seed.ts",
-    "docs": "pnpm nest build && pnpm swagger:generate",
+    "docs": "nest build && npm run swagger:generate",
     "swagger:generate": "node scripts/generate-swagger.js",
     "lint-staged": "lint-staged"
   },
@@ -33,8 +32,7 @@
     ]
   },
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=8"
+    "node": ">=20"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.927.0",
