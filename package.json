@@ -4,7 +4,7 @@
   "description": "Enterprise-grade NestJS backend for movie platform",
   "private": true,
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
+    "preinstall": "node scripts/enforce-pnpm.js",
     "format": "prettier --write \"{src,tests,scripts}/**/*.{ts,js,json,md,yml,yaml}\"",
     "lint": "eslint \"{src,tests}/**/*.ts\" --max-warnings=0",
     "build": "nest build",
