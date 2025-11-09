@@ -8,6 +8,9 @@ import {
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 
+import { Public } from '@shared/decorators/public.decorator';
+
+@Public()
 @Controller({ path: 'health', version: '1' })
 export class HealthController {
   constructor(
@@ -17,6 +20,7 @@ export class HealthController {
     private readonly memory: MemoryHealthIndicator,
   ) {}
 
+  @Public()
   @Get()
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {

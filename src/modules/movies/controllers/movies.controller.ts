@@ -42,7 +42,6 @@ export class MoviesController {
   ) {}
 
   @Post()
-  @Roles(ROLES.ADMIN)
   @ApiOperation({
     summary: 'Create a new movie (URL-based poster)',
     description:
@@ -58,7 +57,6 @@ export class MoviesController {
   }
 
   @Post('with-upload')
-  @Roles(ROLES.ADMIN)
   @UseInterceptors(FileInterceptor('poster'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
@@ -171,7 +169,6 @@ export class MoviesController {
   }
 
   @Patch(':id')
-  @Roles(ROLES.ADMIN)
   @UseInterceptors(FileInterceptor('poster'))
   @ApiConsumes('multipart/form-data', 'application/json')
   @ApiOperation({
@@ -229,7 +226,6 @@ export class MoviesController {
   }
 
   @Delete(':id')
-  @Roles(ROLES.ADMIN)
   @ApiOperation({
     summary: 'Delete a movie',
     description: 'Soft deletes a movie and automatically removes the associated poster from S3.',

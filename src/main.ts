@@ -45,11 +45,16 @@ async function bootstrap(): Promise<void> {
   );
 
   // Enable CORS with explicit configuration
+  const defaultOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://d2vahum1kkb4av.amplifyapp.com',
+    'https://main.d2vahum1kkb4av.amplifyapp.com',
+    'https://api.movielist.shop',
+  ];
+
   app.enableCors({
-    origin: dynamicConfigService.get<string[]>('cors.allowedOrigins') || [
-      'http://localhost:3000',
-      'http://localhost:3001',
-    ],
+    origin: dynamicConfigService.get<string[]>('cors.allowedOrigins') ?? defaultOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Request-Id'],
