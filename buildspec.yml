@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Installing dependencies..."
+      - node --version
+      - npm --version
+      - npm ci --include=dev
+  build:
+    commands:
+      - echo "Building application..."
+      - npm run build
+  post_build:
+    commands:
+      - echo "Build completed successfully"
+      - ls -la dist/
+
+artifacts:
+  files:
+    - '**/*'
+

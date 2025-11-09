@@ -1,4 +1,4 @@
-.PHONY: install lint test build start docker-up docker-down migrate seed
+.PHONY: install lint test build start docker-up docker-down migrate seed eb-logs
 
 install:
 	npm install
@@ -26,3 +26,6 @@ migrate:
 
 seed:
 	npm run seed
+
+eb-logs:
+	./scripts/fetch-eb-logs.sh
