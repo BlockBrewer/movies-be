@@ -1,4 +1,4 @@
-.PHONY: install lint test build start docker-up docker-down migrate seed eb-logs
+.PHONY: install lint test build start docker-up docker-down migrate seed eb-logs deploy-local
 
 install:
 	npm install
@@ -29,3 +29,6 @@ seed:
 
 eb-logs:
 	./scripts/fetch-eb-logs.sh
+
+deploy-local:
+	./scripts/deploy-local.sh
