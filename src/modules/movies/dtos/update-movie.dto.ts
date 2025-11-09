@@ -1,4 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
+
+import type { UploadedFile as UploadedFilePayload } from '@shared/types/uploaded-file.type';
 import { IsOptional } from 'class-validator';
 
 import { CreateMovieDto } from './create-movie.dto';
@@ -11,5 +13,5 @@ export class UpdateMovieDto extends PartialType(CreateMovieDto) {
     required: false,
   })
   @IsOptional()
-  poster?: Express.Multer.File;
+  poster?: UploadedFilePayload;
 }

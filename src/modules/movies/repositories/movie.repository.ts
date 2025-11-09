@@ -19,8 +19,18 @@ export class MovieRepository {
     return this.repository.save(entity);
   }
 
-  findAll(): Promise<MovieEntity[]> {
-    return this.repository.find({ order: { createdAt: 'DESC' } });
+  async paginate(
+    page: number,
+    limit: number,
+  ): Promise<{ data: MovieEntity[]; total: number }> {
+    const [data, total] = await this.repository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' },
+      withDeleted: false,
+    });
+
+    return { data, total };
   }
 
   findById(id: string): Promise<MovieEntity | null> {

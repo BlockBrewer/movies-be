@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 
+import type { UploadedFile as UploadedFilePayload } from '@shared/types/uploaded-file.type';
+
 import { S3ConfigService } from '@core/config/s3-config.service';
 
 export interface FileValidationOptions {
@@ -23,7 +25,7 @@ export class FileValidationPipe implements PipeTransform {
     this.required = options?.required !== undefined ? options.required : false;
   }
 
-  transform(file: Express.Multer.File | undefined): Express.Multer.File {
+  transform(file: UploadedFilePayload | undefined): UploadedFilePayload {
     if (!file) {
       if (this.required) {
         throw new BadRequestException('File is required');

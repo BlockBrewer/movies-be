@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import type { UploadedFile as UploadedFilePayload } from '@shared/types/uploaded-file.type';
+
 export class UploadPosterDto {
   @ApiProperty({
     type: 'string',
     format: 'binary',
     description: 'Movie poster image file (JPEG, PNG, or WebP)',
   })
-  file!: Express.Multer.File;
+  file!: UploadedFilePayload;
 }
 
 export class UploadPosterResponseDto {

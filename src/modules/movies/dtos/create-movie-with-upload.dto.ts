@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+
+import type { UploadedFile as UploadedFilePayload } from '@shared/types/uploaded-file.type';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 
@@ -23,5 +25,5 @@ export class CreateMovieWithUploadDto {
     required: false,
   })
   @IsOptional()
-  poster?: Express.Multer.File;
+  poster?: UploadedFilePayload;
 }

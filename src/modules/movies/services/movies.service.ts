@@ -2,8 +2,12 @@ import { ConflictException, Injectable, Logger, NotFoundException } from '@nestj
 
 import { S3Service } from '@core/services/s3.service';
 
+import { PaginationQueryDto } from '@shared/dtos/pagination-query.dto';
+import type { UploadedFile as UploadedFilePayload } from '@shared/types/uploaded-file.type';
+
 import { CreateMovieWithUploadDto } from '../dtos/create-movie-with-upload.dto';
 import { CreateMovieDto } from '../dtos/create-movie.dto';
+import { MoviePaginatedResponseDto } from '../dtos/movie-paginated-response.dto';
 import { MovieResponseDto } from '../dtos/movie-response.dto';
 import { UpdateMovieDto } from '../dtos/update-movie.dto';
 import { UploadPosterResponseDto } from '../dtos/upload-poster.dto';
@@ -37,7 +41,7 @@ export class MoviesService {
 
   async createWithUpload(
     dto: CreateMovieWithUploadDto,
-    poster?: Express.Multer.File,
+    poster?: UploadedFilePayload,
   ): Promise<MovieResponseDto> {
     const titleExists = await this.movieRepository.existsWithTitle(dto.title);
     if (titleExists) {
@@ -66,7 +70,7 @@ export class MoviesService {
     return this.mapToResponse(saved);
   }
 
-  async uploadPoster(file: Express.Multer.File): Promise<UploadPosterResponseDto> {
+  async uploadPoster(file: UploadedFilePayload): Promise<UploadPosterResponseDto> {
     const uploadResult = await this.s3Service.uploadFile({
       buffer: file.buffer,
       originalName: file.originalname,
@@ -82,9 +86,15 @@ export class MoviesService {
     };
   }
 
-  async findAll(): Promise<MovieResponseDto[]> {
-    const movies = await this.movieRepository.findAll();
-    return movies.map((movie) => this.mapToResponse(movie));
+  async findAll({ page = 1, limit = 25 }: PaginationQueryDto = {}): Promise<MoviePaginatedResponseDto> {
+    const { data, total } = await this.movieRepository.paginate(page, limit);
+
+    return {
+      data: data.map((movie) => this.mapToResponse(movie)),
+      total,
+      page,
+      limit,
+    };
   }
 
   async findById(id: string): Promise<MovieResponseDto> {
@@ -99,7 +109,7 @@ export class MoviesService {
   async update(
     id: string,
     dto: UpdateMovieDto,
-    poster?: Express.Multer.File,
+    poster?: UploadedFilePayload,
   ): Promise<MovieResponseDto> {
     const movie = await this.movieRepository.findById(id);
     if (!movie) {

@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -20,13 +21,18 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import type { UploadedFile as UploadedFilePayload } from '@shared/types/uploaded-file.type';
+
 import { S3ConfigService } from '@core/config/s3-config.service';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { ROLES } from '@shared/constants/roles.constant';
 import { FileValidationPipe } from '@shared/pipes/file-validation.pipe';
 
+import { PaginationQueryDto } from '@shared/dtos/pagination-query.dto';
+
 import { CreateMovieWithUploadDto } from '../dtos/create-movie-with-upload.dto';
 import { CreateMovieDto } from '../dtos/create-movie.dto';
+import { MoviePaginatedResponseDto } from '../dtos/movie-paginated-response.dto';
 import { MovieResponseDto } from '../dtos/movie-response.dto';
 import { UpdateMovieDto } from '../dtos/update-movie.dto';
 import { UploadPosterResponseDto } from '../dtos/upload-poster.dto';
@@ -100,7 +106,7 @@ export class MoviesController {
   @ApiResponse({ status: 500, description: 'Failed to upload file to S3' })
   async createWithUpload(
     @Body() dto: CreateMovieWithUploadDto,
-    @UploadedFile() poster?: Express.Multer.File,
+    @UploadedFile() poster?: UploadedFilePayload,
   ): Promise<MovieResponseDto> {
     if (poster) {
       const validationPipe = new FileValidationPipe(this.s3ConfigService, { required: false });
@@ -140,7 +146,7 @@ export class MoviesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   @ApiResponse({ status: 500, description: 'Failed to upload file to S3' })
-  async uploadPoster(@UploadedFile() file?: Express.Multer.File): Promise<UploadPosterResponseDto> {
+  async uploadPoster(@UploadedFile() file?: UploadedFilePayload): Promise<UploadPosterResponseDto> {
     const validationPipe = new FileValidationPipe(this.s3ConfigService, { required: true });
     const validatedFile = validationPipe.transform(file);
     return this.moviesService.uploadPoster(validatedFile);
@@ -148,14 +154,12 @@ export class MoviesController {
 
   @Get()
   @ApiOperation({ summary: 'Get all movies', description: 'Returns a list of all movies' })
-  @ApiResponse({
-    status: 200,
-    description: 'Movies retrieved successfully',
-    type: [MovieResponseDto],
-  })
+  @ApiResponse({ status: 200, description: 'Movies retrieved successfully', type: MoviePaginatedResponseDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(): Promise<MovieResponseDto[]> {
-    return this.moviesService.findAll();
+  async findAll(
+    @Query() query: PaginationQueryDto,
+  ): Promise<MoviePaginatedResponseDto> {
+    return this.moviesService.findAll(query);
   }
 
   @Get(':id')
@@ -216,7 +220,7 @@ export class MoviesController {
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateMovieDto,
-    @UploadedFile() poster?: Express.Multer.File,
+    @UploadedFile() poster?: UploadedFilePayload,
   ): Promise<MovieResponseDto> {
     if (poster) {
       const validationPipe = new FileValidationPipe(this.s3ConfigService, { required: false });
