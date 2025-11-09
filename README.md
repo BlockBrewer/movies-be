@@ -1,120 +1,49 @@
-# Movie Backend
+# Movie Platform – Backend
 
-A production-ready NestJS backend for managing movies with authentication, file uploads, and monitoring.
+NestJS service providing auth, movie management, file uploads, and operational tooling for the platform.
 
 ## Features
 
-- JWT-based authentication with role-based access control
-- Movie management with S3 poster uploads
-- RESTful API with Swagger documentation
-- PostgreSQL database with TypeORM
-- Prometheus metrics and health checks
-- Request logging and correlation IDs
-- Docker & Kubernetes deployment ready
+- JWT access + refresh tokens with guards, refresh endpoint, and password hashing via bcrypt
+- Role-ready architecture using Nest guards/interceptors and scoped decorators
+- Movie CRUD with poster uploads to S3 (multipart + signed URLs) and metadata validation
+- Background-safe file handling with streaming uploads and cleanup hooks
+- TypeORM + PostgreSQL persistence with migrations, seeds, and soft-delete support
+- Health checks, Prometheus metrics, structured logging, correlation IDs, and request timing
+- Swagger docs, DTO validation (class-validator), and consistent API envelopes with error mapping
+- Configuration module supporting per-environment overrides and schema validation
+- Rate limiting, CORS configuration, and helmet-style security defaults baked in
 
-## Quick Start
+## Setup
 
-1. Copy environment variables:
-```bash
-cp config/env.example .env
-```
+1. `cd /Users/kamran/Work/NLabs/movie-be`
+2. `cp config/env.example .env`
+3. Update `.env` with PostgreSQL connection, JWT secrets, and AWS credentials (LocalStack works for local dev)
+4. `npm install`
+5. `npm run migrate && npm run seed`
+6. `npm run start:dev`
 
-2. Configure your database and AWS credentials in `.env`
+Services exposed locally:
 
-3. Install dependencies and run:
-```bash
-npm install
-npm run build
-npm run migrate
-npm run seed
-npm run start:dev
-```
+- REST API: `http://localhost:3025/v1`
+- Swagger UI: `http://localhost:3025/docs`
+- Health endpoint: `http://localhost:3025/health`
 
-Or use Docker:
-```bash
-docker-compose up -d
-```
-
-API docs available at `http://localhost:3025/docs`
-
-## Development
+## Scripts
 
 ```bash
-# Linting
 npm run lint
 npm run format
-
-# Testing
 npm run test:unit
 npm run test:integration
 npm run test:e2e
-
-# Database
-npm run migration:generate
 npm run migrate
+npm run migration:generate src/migrations/<name>
 ```
 
-## Project Structure
+## Deployment
 
-```
-src/
-├── core/           # Configuration, logging, filters, interceptors
-├── modules/        # Feature modules (auth, users, movies, etc.)
-├── shared/         # Shared utilities and constants
-└── main.ts         # Application entry point
-
-db/
-├── migrations/     # TypeORM migrations
-└── seeds/          # Database seed files
-```
-
-## Tech Stack
-
-- **Framework**: NestJS 10
-- **Database**: PostgreSQL with TypeORM
-- **Authentication**: JWT with bcrypt
-- **Storage**: AWS S3 for file uploads
-- **Monitoring**: Prometheus + Grafana
-- **Validation**: class-validator
-- **Testing**: Jest
-
-## Environment Variables
-
-See `config/env.example` for all required configuration. Key variables:
-
-- `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - Secret for JWT tokens
-- `AWS_*` - S3 credentials and bucket info
-
-## CI/CD (Elastic Beanstalk)
-
-GitHub Actions automatically builds, tests, and deploys the service to AWS Elastic Beanstalk when changes land on `main`.
-
-### Prerequisites
-
-- Elastic Beanstalk application and environment already provisioned (Node.js platform).
-- S3 bucket for application bundles (often created automatically by Elastic Beanstalk).
-- AWS IAM user or role with `elasticbeanstalk:*`, `s3:*`, and `iam:PassRole` permissions limited to the target resources.
-
-### GitHub Secrets
-
-Configure the following repository secrets before enabling the workflow:
-
-- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` – credentials that can manage the target Elastic Beanstalk environment.
-- `AWS_REGION` – e.g. `ap-southeast-1`.
-- `EB_APP_NAME` – Elastic Beanstalk application name.
-- `EB_ENV_NAME` – Elastic Beanstalk environment name.
-- `EB_S3_BUCKET` – S3 bucket that stores application bundles (for example `elasticbeanstalk-ap-southeast-1-123456789012`).
-
-### Deployment Flow
-
-1. Push or merge to `main` (or trigger `Deploy to Elastic Beanstalk` manually from the Actions tab).
-2. The workflow installs dependencies with `npm`, runs lint and tests, and builds the production bundle.
-3. A ZIP artifact (without `node_modules`) is uploaded to the configured S3 bucket.
-4. The workflow creates a new Elastic Beanstalk application version using the commit SHA as the version label and swaps the environment to that version.
-
-Monitor deployment progress from the Elastic Beanstalk console or the Actions run logs. If a deployment fails, review the EB event logs for more details.
-
-## License
-
-MIT
+- **Docker**: `docker-compose up -d` brings up API, Postgres, and S3-compatible storage.
+- **Elastic Beanstalk**: GitHub Actions workflow builds, tests, uploads an artifact to S3, and promotes a new EB application version.
+- **CI/CD**: Pipeline runs linting, unit/integration/e2e tests, build, and deployment on every push to `main`; status badges and logs available in GitHub Actions.
+- Ensure environment variables used in `.env` are configured in each environment (JWT secrets, AWS creds, database URL, etc.).
