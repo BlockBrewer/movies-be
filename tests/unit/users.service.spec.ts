@@ -54,11 +54,12 @@ describe('UsersService', () => {
     const saved = await service.create(dto);
 
     expect(repository.findByEmail).toHaveBeenCalledWith(dto.email.toLowerCase());
-    expect(hashPassword).toHaveBeenCalledWith(dto.password);
+    // Password hashing is now handled by UserSubscriber.beforeInsert(), not in the service
+    expect(hashPassword).not.toHaveBeenCalled();
     expect(repository.create).toHaveBeenCalledWith({
       email: dto.email.toLowerCase(),
       fullName: dto.fullName,
-      password: 'hashed-pass',
+      password: dto.password,
       phoneNumber: undefined,
     });
     expect(repository.save).toHaveBeenCalled();

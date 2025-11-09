@@ -2,7 +2,6 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 
 import { RegisterRequestDto } from '@modules/auth/dtos/register-request.dto';
 import { PaginationQueryDto } from '@shared/dtos/pagination-query.dto';
-import { hashPassword } from '@shared/utils/password.util';
 
 import { UserResponseDto } from '../dtos/user-response.dto';
 import { UserEntity } from '../entities/user.entity';
@@ -19,11 +18,9 @@ export class UsersService {
       throw new ConflictException('Email already registered');
     }
 
-    const hashedPassword = await hashPassword(request.password);
-
     const user = this.userRepository.create({
       email: normalizedEmail,
-      password: hashedPassword,
+      password: request.password,
       fullName: request.fullName,
       phoneNumber: request.phoneNumber,
     });
